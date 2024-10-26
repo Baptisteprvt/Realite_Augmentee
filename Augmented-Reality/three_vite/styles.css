@@ -1,0 +1,115 @@
+/* Styles pour le bouton "Next" */
+#next {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 15vw; /* Utilisation d'unités relatives à la largeur de l'écran */
+    height: 8vh; /* Utilisation d'unités relatives à la hauteur de l'écran */
+    font-size: 2vw;
+    background-color: #949494; /* Vert */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#next:hover {
+    background-color: #4e4e4e; /* Vert plus foncé au survol */
+}
+
+#score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 3vw;
+    color: rgb(255, 255, 255);
+}
+
+#start {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50vw;
+    height: 18vh;
+    font-size: 5vw;
+    background-color: #00000020;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#start:hover {
+    background-color: #00000040;
+}
+
+#game-over, #leaderboard {
+    display: none;
+  }  
+
+#restart {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50vw;
+    height: 18vh;
+    font-size: 5vw;
+    background-color: #00000020;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#restart:hover {
+    background-color: #00000040;
+}
+
+/* Conteneur des boutons QCM */
+.qcm-container {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%); /* Centrer horizontalement */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colonnes par défaut */
+    gap: 10px; /* Espacement entre les boutons */
+    z-index: 1;
+    width: 80%; /* Largeur relative à la taille de l'écran */
+}
+
+/* Styles pour les boutons QCM */
+.qcm-container button {
+    width: 100%; /* Prend toute la largeur de la colonne */
+    height: 8vh;
+    font-size: 1.8vw; /* Taille du texte dépend de la largeur de l'écran */
+    background-color: #868686; /* Gris */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.qcm-container button:hover {
+    background-color: #4b4b4b; /* Gris plus foncé au survol */
+}
+
+/* Media Query pour les petits écrans (mobiles) */
+@media (max-width: 600px) {
+    .qcm-container {
+        grid-template-columns: 1fr; /* 1 colonne sur petit écran */
+    }
+    
+    #next {
+        width: 40vw;
+        height: 8vh;
+        font-size: 4vw;
+    }
+    
+    .qcm-container button {
+        font-size: 4vw; /* Augmenter la taille du texte sur mobile */
+        height: 10vh;
+    }
+}
