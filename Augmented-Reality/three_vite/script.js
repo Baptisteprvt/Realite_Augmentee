@@ -4,11 +4,13 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
-// Initialisation de la scène
+// Initialisation de la scène, de la caméra et de l'écouteur audio
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 3;
 camera.position.y = 2;
+const listener = new THREE.AudioListener();
+camera.add(listener);
 
 // Initialisation du rendu
 const renderer = new THREE.WebGLRenderer();
@@ -17,7 +19,7 @@ document.body.appendChild(renderer.domElement);
 
 // Controles des zooms et déplacements
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0, 0); 
+controls.target.set(0, 0, 0);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.enableZoom = false;
@@ -27,11 +29,11 @@ controls.enableRotate = false;
 
 // Création du monde physique
 const world = new CANNON.World();
-world.gravity.set(0, -2, 0);
 const groundShape = new CANNON.Plane();
 const groundBody = new CANNON.Body({ mass: 0 });
 groundBody.addShape(groundShape);
 groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+world.gravity.set(0, -2, 0);
 world.addBody(groundBody);
 
 /*
@@ -42,7 +44,6 @@ world.addBody(groundBody);
     - clock : Horloge pour l'animation de clignotement
     - oscillationSpeed : Vitesse de clignotement
     - score : Score actuel
-    - leaderboard : Tableau des scores en .txt
     - bonesOrder : Ordre aléatoire des os
     - elements : Tableau des éléments de la scène
     - mixer : Mixer pour les animations
@@ -51,6 +52,8 @@ world.addBody(groundBody);
     - buttonGeometry : Géométrie des boutons QCM
     - buttonMaterial : Matériau des boutons QCM
     - buttonMeshes : Meshes des boutons QCM
+    - successSound : Son de succès
+    - wrongSound : Son d'erreur
 */
 let bonesGroup = new THREE.Group();
 let selectedBoneIndex = 0;
@@ -58,7 +61,7 @@ let previousBone = null;
 let clock = new THREE.Clock();
 let oscillationSpeed = 5;
 let score = 0;
-let bonesOrder = []; 
+let bonesOrder = [];
 let elements = [];
 let mixer;
 const raycaster = new THREE.Raycaster();
@@ -66,45 +69,58 @@ const mouse = new THREE.Vector2();
 const buttonGeometry = new THREE.BoxGeometry(1.2, 0.5, 0.05);
 const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 let buttonMeshes = [];
-
-
-window.addEventListener('click', onMouseClick, false);
-
+let successSound;
+let wrongSound;
+let gameStarted = false;
 
 
 /*
     Fonctions : 
     - onMouseClick : Fonction pour gérer les clics de souris
+        - event : Événement de clic de souris
     - handleObjectClick : Fonction pour gérer les clics sur les objets
+        - object : Objet cliqué
     - createQCMButtons : Créer les boutons QCM pour les réponses
     - createTextTexture : Créer une texture de texte pour les boutons QCM
+        - text : Texte à afficher sur le bouton
     - updateButtonLabels : Mettre à jour les labels des boutons QCM
-    - shuffleArray : Mélanger les os dans un tableau pour un ordre aléatoire
+        - labels : Labels des boutons
+    - shuffleArray : Mélanger un tableau
+        - array : Tableau à mélanger
     - generateBonesOrder : Générer un ordre aléatoire des os
-    - nextBone : Afficher le prochain os
-    - animateColor : Animer la couleur de l'os actif
+    - nextBone : Passer à l'os suivant
+    - animateColor : Animer la couleur d'un objet
+        - object : Objet à animer
     - checkAnswer : Vérifier la réponse de l'utilisateur
-    - fillQCMButtons : Remplir les boutons QCM avec des noms d'os
-    - triggerSuccessAnimation : Animation de succès pour un os
-    - getBoneBoundingBoxCenter : Obtenir le centre de la bounding box d'un os
-    - triggerExplosionAnimation : Animation d'explosion pour un os
+        - button : Bouton cliqué
+    - fillQCMButtons : Remplir les boutons QCM avec les réponses
+    - triggerSuccessAnimation : Déclencher l'animation de succès
+        - bone : Os à animer
+    - getBoneBoundingBoxCenter : Obtenir le centre de la boîte englobante d'un os
+        - bone : Os à analyser
+    - triggerExplosionAnimation : Déclencher l'animation d'explosion
+        - bone : Os à animer
     - addPhysicalBody : Ajouter un corps physique à un objet
-    - createPhysicalPiece : Créer un morceau physique pour l'explosion
-    - removeOldElements : Supprimer les éléments de la scène
+        - object : Objet à analyser
+        - mass : Masse de l'objet
+    - createPhysicalPiece : Créer un morceau physique
+        - piece : Morceau à analyser
+        - vecSize : Taille du morceau
+    - removeOldElements : Supprimer les anciens éléments de la scène
     - moveCameraToBone : Déplacer la caméra vers un os
-*/ 
+        - bone : Os à analyser
+*/
 function onMouseClick(event) {
+    if (!gameStarted) return;
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    // Mettre à jour le raycaster avec la caméra et la position de la souris
     raycaster.setFromCamera(mouse, camera);
 
-    // Obtenir les objets que le rayon intersecte
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     if (intersects.length > 0) {
-        const object = intersects[0].object; 
+        const object = intersects[0].object;
         handleObjectClick(object);
     }
 }
@@ -112,50 +128,44 @@ function onMouseClick(event) {
 function handleObjectClick(object) {
     console.log('Objet cliqué:', object.name);
 
-    if (object.name.startsWith('qcmButton'))
-    {
+    if (object.name.startsWith('qcmButton')) {
         const index = parseInt(object.name.replace('qcmButton', ''));
         checkAnswer(buttonMeshes[index]);
-        document.getElementById('next').click();
+        nextBone();
     }
-    else if(object.name == "Enchufe")
-    {
-        if(pointLight2.intensity == 0)
-        {
+    else if (object.name == "Enchufe") {
+        if (pointLight2.intensity == 0) {
             pointLight2.intensity = 500;
             pointLight.intensity = 5;
         }
-        else
-        {
+        else {
             pointLight2.intensity = 0;
             pointLight.intensity = 1;
         }
     }
 
-    else if(object.name == "porte") {
-        if(object.rotation.y == 0)
-        {
+    else if (object.name == "porte") {
+        if (object.rotation.y == 0) {
             object.rotation.y = Math.PI / 2;
             object.position.x = (object.position.x - 780);
             object.position.z = (object.position.z - 235);
             // J'ai du hardcoder parce que la porte tourne autour du centre de la carte et pas de elle meme
         }
-        else
-        {
+        else {
             object.rotation.y = 0;
             object.position.x = (object.position.x + 780);
             object.position.z = (object.position.z + 235);
         }
     }
 
-    else if(object.name == "Enchufe.3")
-    {       //Skip to last bone
+    else if (object.name == "Enchufe.3") {       //Skip to last bone (for debugging)
         selectedBoneIndex = bonesOrder.length - 1;
         nextBone();
     }
 }
 
 function createQCMButtons() {
+    if(!gameStarted) return;
     for (let i = 0; i < 2; i++) {
         const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial.clone());
         buttonMesh.rotation.y = Math.PI / 2;
@@ -166,20 +176,19 @@ function createQCMButtons() {
         buttonMeshes.push(buttonMesh);
         scene.add(buttonMesh);
     }
-    //les mettre plus haut pour qu'ils soient visibles
     for (let i = 2; i < 4; i++) {
         const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial.clone());
         buttonMesh.rotation.y = Math.PI / 2;
-        let z = -1.5 + (i-2) * 1.3;
+        let z = -1.5 + (i - 2) * 1.3;
         z = Math.round(z * 100) / 100;
         buttonMesh.position.set(-2.9, 1.8, z);
         buttonMesh.name = `qcmButton${i}`;
         buttonMeshes.push(buttonMesh);
         scene.add(buttonMesh);
     }
-  }
+}
 
-  function createTextTexture(text) {
+function createTextTexture(text) {
     text = text.toUpperCase();
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -190,29 +199,28 @@ function createQCMButtons() {
     context.fillStyle = 'black';
     context.font = 'bold 20px Arial';
     //retour a la ligne si le texte est trop long
-    if(text.length > 36){
+    if (text.length > 36) {
         //baisser la police et separer en deux a l'espace le plus proche a gauche
         context.font = 'bold 15px Arial';
         let text1 = text.substring(0, text.lastIndexOf(' ', 20));
-        let text2 = text.substring(text.lastIndexOf(' ', 20)+1);
+        let text2 = text.substring(text.lastIndexOf(' ', 20) + 1);
         context.fillText(text1, 10, 25);
         context.fillText(text2, 10, 55);
     }
-    else if(text.length > 18){
+    else if (text.length > 18) {
         //separer en deux a l'espace le plus proche a gauche
         let text1 = text.substring(0, text.lastIndexOf(' ', 18));
-        let text2 = text.substring(text.lastIndexOf(' ', 18)+1);
+        let text2 = text.substring(text.lastIndexOf(' ', 18) + 1);
         context.fillText(text1, 10, 25);
         context.fillText(text2, 10, 55);
     }
-    else
-    {
+    else {
         context.fillText(text, 10, 40);
     }
     const texture = new THREE.CanvasTexture(canvas);
     return texture;
-  }
-  
+}
+
 function updateButtonLabels(labels) {
     buttonMeshes.forEach((buttonMesh, index) => {
         const textTexture = createTextTexture(labels[index]);
@@ -262,7 +270,6 @@ const nextBone = () => {
             if (selectedBoneIndex >= bonesOrder.length - 1) {
                 console.log('Tous les os ont été passés!');
                 document.getElementById('restart').style.display = 'block';
-                document.getElementById('next').style.display = 'none';
                 camera.position.z = 3;
                 camera.position.y = 2;
                 camera.position.x = 0;
@@ -314,11 +321,10 @@ const checkAnswer = (button) => {
         console.log('Bonne réponse!');
         score++;
         triggerSuccessAnimation(previousBone);
-        document.getElementById('score').innerHTML = `Score: ${score}`; 
+        document.getElementById('score').innerHTML = `Score: ${score}`;
     } else {
         console.log('Mauvaise réponse! La bonne réponse était:', correctAnswer);
         console.log('Votre réponse était:', userAnswer);
-        //triggerSuccessAnimation(previousBone);
         triggerExplosionAnimation(previousBone);
         document.getElementById('score').innerHTML = `Score: ${score}`;
     }
@@ -334,8 +340,8 @@ const fillQCMButtons = () => {
     otherBones = otherBones.sort(() => 0.5 - Math.random()).slice(0, 3);
 
     const otherAnswers = otherBones
-    .filter(bone => bone.geometry && bone.name !== correctAnswer && bone.name !== undefined)
-    .map(bone => bone.name);
+        .filter(bone => bone.geometry && bone.name !== correctAnswer && bone.name !== undefined)
+        .map(bone => bone.name);
 
     // Mélanger la bonne réponse avec les 3 autres
     const allAnswers = [correctAnswer, ...otherAnswers].sort(() => 0.5 - Math.random());
@@ -344,31 +350,34 @@ const fillQCMButtons = () => {
 };
 
 const triggerSuccessAnimation = (bone) => {
-    const maxScale = 1.2;
-    const minScale = 1.0;
-    const duration = 1.0;
+    if (!bone) return;
 
-    const initialScale = bone.scale.clone();
-    const initialEmissiveIntensity = bone.material.emissiveIntensity;
+    // Jouer le son de succès
+    if (successSound) {
+        successSound.play();
+    }
 
     let startTime = performance.now();
+    const duration = 1000; // Durée d'animation en millisecondes (1 seconde)
 
     const animateBone = () => {
-        const currentTime = performance.now();
-        const elapsedTime = (currentTime - startTime) / 1000;
-        const progress = Math.min(elapsedTime / duration, 1);
-        const scaleFactor = minScale + (maxScale - minScale) * (Math.sin(progress * Math.PI) * 0.5 + 0.5);
-        bone.scale.set(initialScale.x * scaleFactor, initialScale.y * scaleFactor, initialScale.z * scaleFactor);
-        bone.material.emissiveIntensity = initialEmissiveIntensity + 0.5 * (scaleFactor - 1);
+        const elapsedTime = performance.now() - startTime;
 
-        // Tant que l'animation n'est pas terminée, continuer
-        if (progress < 1) {
+        if (elapsedTime < duration) {
+            const greenValue = Math.sin(elapsedTime / 100 * Math.PI * 2) * 0.5 + 0.5;
+            bone.material.color.setRGB(0, greenValue, 0); // Osciller en vert
+            bone.material.emissive.setRGB(0, greenValue, 0);
+            bone.material.emissiveIntensity = 0.5;
+
             requestAnimationFrame(animateBone);
+
         } else {
-            bone.scale.copy(initialScale); 
-            bone.material.emissiveIntensity = initialEmissiveIntensity;
+            bone.material.color.setHex(0xffffff);
+            bone.material.emissive.setHex(0x000000);
+            bone.material.emissiveIntensity = 0;
         }
     };
+
     requestAnimationFrame(animateBone);
 };
 
@@ -392,12 +401,16 @@ const triggerExplosionAnimation = (bone) => {
     const explosionForce = 1;
     const bonePosition = new THREE.Vector3();
     bonePosition.copy(getBoneBoundingBoxCenter(bone));
-  
+
     const pieces = [];
     const pieceSize = 0.05;
-  
+
     bone.visible = false;
-  
+
+    if (wrongSound) {
+        wrongSound.play();
+    }
+
     for (let i = 0; i < numPieces; i++) {
         const vecSize = new CANNON.Vec3(Math.random() * pieceSize, Math.random() * pieceSize, Math.random() * pieceSize);
         const geometry = new THREE.BoxGeometry(vecSize.x, vecSize.y, vecSize.z);
@@ -405,38 +418,38 @@ const triggerExplosionAnimation = (bone) => {
         const piece = new THREE.Mesh(geometry, material);
         piece.position.copy(bonePosition);
         scene.add(piece);
-    
+
         // Corps physique pour chaque morceau
         const pieceBody = createPhysicalPiece(piece, vecSize);
-    
+
         const force = new CANNON.Vec3(
             (Math.random() - 0.5) * explosionForce,
             (Math.random() - 0.5) * explosionForce,
             (Math.random() - 0.5) * explosionForce
         );
         pieceBody.applyImpulse(force, pieceBody.position);
-    
+
         pieces.push({ mesh: piece, body: pieceBody });
-        }
+    }
 
-        elements.push(...pieces);
+    elements.push(...pieces);
 
-        if (elements.length > 100) {
-            removeOldElements();
-        }
+    if (elements.length > 100) {
+        removeOldElements();
+    }
 
-        const animatePieces = () => {
+    const animatePieces = () => {
         pieces.forEach((piece) => {
             piece.mesh.position.copy(piece.body.position);
             piece.mesh.quaternion.copy(piece.body.quaternion);
         });
-    
+
         world.step(1 / 60);
         requestAnimationFrame(animatePieces);
-        };
-    
-        animatePieces();
     };
+
+    animatePieces();
+};
 
 const addPhysicalBody = (object, mass = 0) => {
     const shape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5));
@@ -476,10 +489,10 @@ const moveCameraToBone = (bone) => {
     bonePosition.copy(getBoneBoundingBoxCenter(bone));
 
     let polarité = 0;
-    if(bone.name.includes('RIGHT')){
+    if (bone.name.includes('RIGHT')) {
         polarité = -0.8;
     }
-    else if(bone.name.includes('LEFT')){
+    else if (bone.name.includes('LEFT')) {
         polarité = 0.8;
     }
 
@@ -499,37 +512,48 @@ const moveCameraToBone = (bone) => {
         camera.position.lerpVectors(camera.position, targetPosition, t);
         controls.target.lerpVectors(controls.target, bonePosition, t);
 
-        //controls.update();
+        controls.update();
 
         if (t < 1) {
             requestAnimationFrame(animateCamera);
         }
     };
 
-    animateCamera(); 
+    animateCamera();
 };
 
 // Initialisation des boutons
 document.getElementById('restart').style.display = 'none';
-document.getElementById('next').style.display = 'none';
 
 /*
     Listeners :
-    - next : Appel de la fonction nextBone pour passer à l'os suivant
+    - help : Listener sur le bouton d'aide
+    - close : Listener sur le bouton de fermeture de l'aide
+    - click : Listener sur les clic
     - start : Appel des fonctions generateBonesOrder et nextBone pour démarrer la partie
     - restart : Réinitialisation de la partie
     - qcm-container button : Listener sur les boutons QCM pour vérifier la réponse de l'utilisateur
 */
-document.getElementById('next').addEventListener('click', nextBone);
+document.getElementById('help').addEventListener('click', () => {
+    document.getElementById('help-text').style.display = 'block';
+});
+
+document.getElementById('close').addEventListener('click', () => {
+    document.getElementById('help-text').style.display = 'none';
+});
+
+window.addEventListener('click', onMouseClick, false);
 
 document.getElementById('start').addEventListener('click', () => {
     document.getElementById('start').style.display = 'none';
-    document.getElementById('next').style.display = 'block';
     controls.enableRotate = true;
     controls.enableZoom = true;
-    createQCMButtons();
     generateBonesOrder();
-    nextBone();
+    gameStarted = true;
+    setTimeout(() => {
+        createQCMButtons();
+        nextBone();
+    }, 100);
 });
 
 document.getElementById('restart').addEventListener('click', () => {
@@ -539,7 +563,6 @@ document.getElementById('restart').addEventListener('click', () => {
     controls.enableZoom = true;
     document.getElementById('score').innerHTML = `Score: ${score}`;
     document.getElementById('restart').style.display = 'none';
-    document.getElementById('next').style.display = 'block';
 
     // Afficher tous les os
     bonesGroup.children.forEach(bone => {
@@ -548,11 +571,11 @@ document.getElementById('restart').addEventListener('click', () => {
 
     generateBonesOrder();
     nextBone();
-    
+
     //Effacer les morceaux d'os de la scène
     elements.forEach(element => {
-            scene.remove(element.mesh);
-            world.removeBody(element.body);
+        scene.remove(element.mesh);
+        world.removeBody(element.body);
     });
 
     buttonMeshes.forEach(buttonMesh => {
@@ -569,8 +592,9 @@ document.getElementById('restart').addEventListener('click', () => {
 
 document.querySelectorAll('.qcm-container button').forEach(button => {
     button.addEventListener('click', () => {
+        if(!gameStarted) return;
         checkAnswer(button);
-        document.getElementById('next').click();
+        nextBone();
     });
 });
 
@@ -592,20 +616,49 @@ scene.add(spotLightBoard);
 // Ajouter des corps physiques pour le squelette
 bonesGroup.children.forEach(bone => {
     bone.body = addPhysicalBody(bone, 0);
-  });
+});
 
 /*
     Loader
+    - audioLoader : Loader pour charger des fichiers audio
+    - textureLoader : Loader pour charger un background 360
     - loadingManager : Manager pour le chargement des fichiers
     - onProgress : Fonction de progression du chargement
     - onLoad : Fonction de fin de chargement
     - mtlLoader : Loader pour charger le fichier MTL
-    - OBJ_PATH : Chemin du fichier OBJ
     - loader : Loader pour charger le fichier OBJ
-    - object : Objet chargé depuis le fichier OBJ
 */
-const loadingManager = new THREE.LoadingManager();
+const audioLoader = new THREE.AudioLoader();
 
+audioLoader.load('../Objects/correct-6033.mp3', (buffer) => {
+    successSound = new THREE.Audio(listener);
+    successSound.setBuffer(buffer);
+    successSound.setLoop(false);
+    successSound.setVolume(0.5);
+});
+
+audioLoader.load('../Objects/wrong-47985.mp3', (buffer) => {
+    wrongSound = new THREE.Audio(listener);
+    wrongSound.setBuffer(buffer);
+    wrongSound.setLoop(false);
+    wrongSound.setVolume(0.5);
+});
+
+
+const textureLoader = new THREE.TextureLoader();
+textureLoader.load('../Objects/360.jpg', (texture) => {
+    const sphereGeometry = new THREE.SphereGeometry(500, 60, 40);
+    sphereGeometry.scale(-1, 1, 1);
+
+    const material = new THREE.MeshBasicMaterial({
+        map: texture,
+    });
+
+    const sphere = new THREE.Mesh(sphereGeometry, material);
+    scene.add(sphere);
+});
+
+const loadingManager = new THREE.LoadingManager();
 loadingManager.onProgress = (item, loaded, total) => {
     const progress = Math.floor((loaded / total) * 100);
     document.getElementById('loading-progress').textContent = progress;
@@ -617,22 +670,20 @@ loadingManager.onLoad = () => {
 
 const mtlLoader = new MTLLoader(loadingManager);
 mtlLoader.load('../Objects/colored_map.mtl', (materials) => {
-  materials.preload();
+    materials.preload();
 
-  // Charger l'OBJ avec les matériaux
-  const objLoader = new OBJLoader(loadingManager);
-  objLoader.setMaterials(materials);
-  objLoader.load('../Objects/colored_map.obj', (object) => {
-    object.scale.set(0.01, 0.01, 0.01);
-    object.position.set(0, -0.01, 0);
-    scene.add(object);
-  });
+    // Charger l'OBJ avec les matériaux
+    const objLoader = new OBJLoader(loadingManager);
+    objLoader.setMaterials(materials);
+    objLoader.load('../Objects/colored_map.obj', (object) => {
+        object.scale.set(0.01, 0.01, 0.01);
+        object.position.set(0, -0.01, 0);
+        scene.add(object);
+    });
 });
 
 
 const OBJ_PATH = '../Objects/DancingBro.fbx';
-
-
 // Charger le modèle avec animation
 const loader = new FBXLoader(loadingManager);
 loader.load(OBJ_PATH, (object) => {
@@ -657,22 +708,23 @@ loader.load(OBJ_PATH, (object) => {
         mixer = new THREE.AnimationMixer(bonesGroup);
     }
 },
-undefined,
-  (error) => {
-      console.error('Erreur lors du chargement du fichier FBX:', error);
-  }
+    undefined,
+    (error) => {
+        console.error('Erreur lors du chargement du fichier FBX:', error);
+    }
 
 );
 
-// Dans la boucle d'animation, mettre à jour le mixer
+// Animation de la scène
 const animate = () => {
     requestAnimationFrame(animate);
     const delta = clock.getDelta();
     if (mixer) mixer.update(delta);
     renderer.render(scene, camera);
-  };
+};
 
 animate();
+
 /*
     Fonction de rendu
     - render : Fonction de rendu de la scène
@@ -683,8 +735,7 @@ const render = () => {
     if (previousBone) {
         animateColor(previousBone);
     }
-    if(controls.enableRotate)
-    {
+    if (controls.enableRotate) {
         controls.update();
     }
     renderer.render(scene, camera);
