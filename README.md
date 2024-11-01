@@ -1,59 +1,41 @@
-# 🦴 Projet jeu QCM sur un modèle de squelette
+# Skelguessr
 
-Ce projet utilise **Three.js** et **Cannon.js** pour créer une scène 3D interactive permettant aux utilisateurs de répondre à un QCM sur le nom des os. Le modèle 3D inclut des animations et des effets physiques pour offrir une expérience d'apprentissage immersive.
+## Description du projet
+Skelguessr est un jeu éducatif interactif visant à améliorer vos connaissances de l'anatomie osseuse humaine.
+Le joueur explore un modèle 3D de l'anatomie humaine et tente d'identifier correctement les os mis en évidence à travers un système de questions à choix multiples (QCM).
+Le jeu combine des éléments d'apprentissage et d'amusement pour rendre l'étude de l'anatomie plus engageante et immersive.
 
-## 📋 Fonctionnalités
+## Objectif
+L'objectif de ce projet est de créer un outil éducatif interactif utilisant `THREE.js` pour permettre aux utilisateurs d'apprendre l'anatomie humaine de manière ludique.
+En utilisant la visualisation 3D, nous visons à rendre l'apprentissage plus intuitif et engageant.
+Ce projet se veut une ressource pour les étudiants, les enseignants, ou toute personne souhaitant approfondir ses connaissances en anatomie.
 
-- **Visualisation 3D** : Le modèle de squelette est affiché en 3D, avec la possibilité de zoomer et de pivoter autour de l'objet.
-- **Interactions Utilisateur** : Les utilisateurs peuvent répondre à des questions à choix multiples et obtenir un score basé sur leurs réponses. Les questions qcm sont affichées en fonction de l'os mis en avant.
-- **Effets d'Animation** : Lorsqu'un utilisateur se trompe dans sa réponse, des animations et effets visuels sont déclenchés, rendant l'expérience plus engageante.
-- **Physique des Objets** : Utilisation de **Cannon.js** pour simuler des interactions physiques avec le modèle (explosions d'os, gravité).
+## Mode d'emploi
+1. **Démarrage du jeu** : Cliquez sur "Start" pour commencer le jeu. Les contrôles de la caméra seront activés pour vous permettre de visualiser le modèle en 3D.
+2. **Répondre aux questions** : Un os sera mis en évidence, et plusieurs réponses seront proposées sous forme de boutons QCM. Cliquez sur le bouton qui correspond à l'os en question. Les boutons sont dans la scène, sur le mur à gauche du squelette.
+3. **Points et feedback** : Si vous choisissez la bonne réponse, l'os clignotera en vert et vous gagnerez un point. Sinon, l'os se brisera, et vous passerez au prochain os.
+4. **Complétez tous les os** : Continuez jusqu'à ce que vous ayez identifié tous les os. Votre score final sera affiché à la fin du jeu, une animation se lance après avoir passé tous les os.
 
-## ⚙️ Fonctionnalités Techniques
+## Illustration
+- Lien de la video de présentation : https://youtu.be/iMDvhn_VX90
 
-### Initialisation de la Scène et du Modèle
+## Lien de démo
+-
 
-- **Caméra** : Perspective placée à une certaine distance pour une vue d'ensemble du squelette.
-- **Contrôles** : **OrbitControls** permet de manipuler la caméra pour voir le modèle sous différents angles.
-- **Chargement du modèle** : Utilisation de `OBJLoader` et `MTLLoader` pour charger un modèle OBJ avec des textures.
-- **Animation** : Gérée par `AnimationMixer` pour créer des animations. Entre autre une animation de danse à la fin de la partie.
+## Membres du groupe
+- **Baptiste PREVOT**
+- **Todd TAVERNIER**
 
-## 🛠️ Installation et Dépendances
+## Répartition des rôles
+- **Développement 3D avec THREE.js** : Baptiste PREVOT
+- **UI/UX** : Todd TAVERNIER
 
-1. **Prérequis** : Avoir Node.js installé pour utiliser un serveur local. J'ai pour ma part utilisé Live Server sur VS Code pour ce projet.
-2. **Installation des packages** : Téléchargez les packages nécessaires pour utiliser Three.js et Cannon.js.
+## Sources d'inspiration et ressources
+- **THREE.js Examples** : Exploration des exemples sur THREE.js (https://threejs.org/examples/).
+- **Documentation THREE.js** : Utilisé pour apprendre à utiliser et découvrir les outils disponibles en three.js (https://threejs.org/manual/).
+- **Modèles 3D** : Le modèle 3D de la carte est : https://www.cgtrader.com/product/hospital-room-84be45b6-579d-4b24-ab62-8f3e9c394d26 Elle à été legerement modifiée sur Blender (Ajout de porte, changement des couleurs, ...)
+                   Le modèle 3D du squelette vient de [ce site] et à été modifié via un script, pour enlever les informations en trop. L'echelle à été modifiée sur l'editeur threejs (https://threejs.org/editor/).
 
-## 🚀 Démarrage du Projet
+Merci d'avoir essayé Skelguessr !
 
-1. **Lancer un serveur local** : Servez le projet localement pour éviter les erreurs de chargement de ressources, par exemple avec Live Server sur VS Code.
-2. **Accéder à `index.html`** : Ouvrez `index.html` dans votre navigateur.
-3. **Jouer au jeu** : Cliquez sur le bouton "JOUER" pour commencer à répondre aux questions et explorer le modèle de squelette.
-
-## 🎮 Commandes Utilisateur
-
-### Boutons d'interface
-
-- **JOUER** : Démarre la partie en affichant le modèle et en activant les interactions.
-- **SKIP** : Passe à l'os suivant dans le questionnaire, plutôt à but de test.
-- **REJOUER** : Réinitialise la partie et le score.
-
-### Interactions avec le modèle
-
-- **Sélection d'os** : Un os est choisit automatiquement après chaque réponse. L'utilisateur doit dire de quel os il s'agit.
-- **Réponses aux questions** : L’utilisateur peut choisir la réponse correcte en cliquant sur l'un des boutons de réponse inclu dans la scène.
-- **Animations de Réponse** : Réponses correctes et incorrectes déclenchent respectivement une animation de succès et une animation d’explosion de l’os.
-
-### Frameworks et Librairies Utilisés
-
-- **Three.js** : Pour le rendu 3D, les contrôles, et la manipulation de la scène.
-- **Cannon.js** : Pour les effets physiques appliqués aux os et aux objets de la scène.
-
-## 📂 Structure des Fichiers
-
-- **index.html** : Contient la structure HTML, les boutons d'interface utilisateur et le chargement des scripts.
-- **script.js** : Script principal qui initialise la scène, les contrôles, et gère les interactions avec les os et les boutons de questions.
-- **style.css** : Feuille de style pour la mise en page et le design de l'interface utilisateur.
-- **Objects/** : Dossier contenant les modèles 3D, les textures, et les fichiers de configuration pour le chargement des objets.
-
----
-**Profitez de votre exploration du squelette !** 🦴
+Petit tips pour s'éviter 206 os : cliquer sur le petit carré vert au dessus du lit passera jusque à la fin et lancera l'animation de fin de partie. C'est une option de debug laissée volontairement pour aider à la correction.
