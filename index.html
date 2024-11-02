@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Three.js OBJ </title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+          "three/addons/modifiers/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/modifiers/"
+        }
+      }
+    </script>
+  <script type="module" crossorigin src="/assets/index-0T6zwiNR.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Bdo9HurF.css">
+</head>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+</style>
+
+<body>
+
+  <button id="start">PLAY</button>
+
+  <button id="restart">REPLAY</button>
+
+  <button id="help">?</button>
+
+  <div id="help-text" style="display: none;">
+    <h1>How to play ?</h1>
+    <p>Welcome to the Bone Anatomy Challenge!</p>
+    <p>Your goal is to correctly identify bones in the 3D model to increase your score.</p>
+    <p>When you start the game, a bone will be highlighted, and multiple-choice buttons will appear on the wall, on the left of the skeleton, each labeled with different bone names.</p>
+    <p>Click on the button that you believe correctly identifies the highlighted bone.</p>
+    <p>If your answer is correct, the bone will flash green, and you'll earn points.</p>
+    <p>If you are incorrect, the bone will shatter, and you can try again with the next one.</p>
+    <p>Use the mouse to explore the model.</p>
+    <p>Complete all bones to finish the game, and strive for a perfect score!</p>
+    <p>Have fun learning and testing your knowledge of human anatomy!</p>
+    <button id="close">X</button>
+  </div>
+
+  <div id="score"></div>
+
+  <div id="loading-screen"
+    style="position: absolute; width: 100%; height: 100%; background-color: black; color: white; display: flex; justify-content: center; align-items: center; z-index: 1000;">
+    <h1>Loading... <span id="loading-progress">0</span>%</h1>
+  </div>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js"></script>
+
+</body>
+
+</html>
