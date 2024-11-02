@@ -1,7 +1,7 @@
-# Skelguessr
+# SkelGuessr
 
 ## Description du projet
-Skelguessr est un jeu éducatif interactif visant à améliorer vos connaissances de l'anatomie osseuse humaine.
+SkelGuessr est un jeu éducatif interactif visant à améliorer vos connaissances de l'anatomie osseuse humaine.
 Le joueur explore un modèle 3D de l'anatomie humaine et tente d'identifier correctement les os mis en évidence à travers un système de questions à choix multiples (QCM).
 Le jeu combine des éléments d'apprentissage et d'amusement pour rendre l'étude de l'anatomie plus engageante et immersive.
 
@@ -20,22 +20,23 @@ Ce projet se veut une ressource pour les étudiants, les enseignants, ou toute p
 - Lien de la video de présentation : https://youtu.be/iMDvhn_VX90
 
 ## Lien de démo
--
+- https://realite-augmentee.vercel.app/
 
 ## Membres du groupe
 - **Baptiste PREVOT**
 - **Todd TAVERNIER**
 
 ## Répartition des rôles
-- **Développement 3D avec THREE.js** : Baptiste PREVOT
-- **UI/UX** : Todd TAVERNIER
+- **Interactions QCM et physique** : Baptiste PREVOT
+- **Interactions et Export du squelette** : Todd TAVERNIER
+- **Deploy** : Baptiste PREVOT & Todd TAVERNIER
 
 ## Sources d'inspiration et ressources
 - **THREE.js Examples** : Exploration des exemples sur THREE.js (https://threejs.org/examples/).
 - **Documentation THREE.js** : Utilisé pour apprendre à utiliser et découvrir les outils disponibles en three.js (https://threejs.org/manual/).
 - **Modèles 3D** : Le modèle 3D de la carte est : https://www.cgtrader.com/product/hospital-room-84be45b6-579d-4b24-ab62-8f3e9c394d26 Elle à été legerement modifiée sur Blender (Ajout de porte, changement des couleurs, ...)
-                   Le modèle 3D du squelette vient de [ce site] et à été modifié via un script, pour enlever les informations en trop. L'echelle à été modifiée sur l'editeur threejs (https://threejs.org/editor/).
+                   Le modèle 3D du squelette vient de ce https://www.z-anatomy.com/ et à été modifié via un script, pour enlever les informations en trop. L'echelle à été modifiée sur l'editeur threejs (https://threejs.org/editor/).
 
-Merci d'avoir essayé Skelguessr !
+Merci d'avoir essayé SkelGuessr !
 
 Petit tips pour s'éviter 206 os : cliquer sur le petit carré vert au dessus du lit passera jusque à la fin et lancera l'animation de fin de partie. C'est une option de debug laissée volontairement pour aider à la correction.
