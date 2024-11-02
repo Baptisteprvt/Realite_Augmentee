@@ -675,7 +675,7 @@ mtlLoader.load('./Augmented-Reality/Objects/colored_map.mtl', (materials) => {
     // Charger l'OBJ avec les matériaux
     const objLoader = new OBJLoader(loadingManager);
     objLoader.setMaterials(materials);
-    objLoader.load('./Augmented-Reality/Objects/colored_map.obj', (object) => {
+    objLoader.load('https://storage.googleapis.com/my-3d-models/colored_map.obj', (object) => {
         object.scale.set(0.01, 0.01, 0.01);
         object.position.set(0, -0.01, 0);
         scene.add(object);
@@ -683,7 +683,7 @@ mtlLoader.load('./Augmented-Reality/Objects/colored_map.mtl', (materials) => {
 });
 
 
-const OBJ_PATH = './Augmented-Reality/Objects/DancingBro.fbx';
+const OBJ_PATH = 'https://storage.googleapis.com/my-3d-models/DancingBro.fbx';
 // Charger le modèle avec animation
 const loader = new FBXLoader(loadingManager);
 loader.load(OBJ_PATH, (object) => {
