@@ -683,7 +683,7 @@ mtlLoader.load('./Augmented-Reality/Objects/colored_map.mtl', (materials) => {
 });
 
 
-const OBJ_PATH = 'https://www.dropbox.com/scl/fi/1vi1jtykb8hut98jcyaxv/DancingBro.fbx?rlkey=o89iqzwfklm7fk8h26wazb0g9&st=gvbl89ox&raw=1';
+const OBJ_PATH = './Augmented-Reality/Objects/DancingBro.fbx';
 // Charger le modèle avec animation
 const loader = new FBXLoader(loadingManager);
 loader.load(OBJ_PATH, (object) => {
