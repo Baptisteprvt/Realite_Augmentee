@@ -630,14 +630,14 @@ bonesGroup.children.forEach(bone => {
 */
 const audioLoader = new THREE.AudioLoader();
 
-audioLoader.load('./Objects/correct-6033.mp3', (buffer) => {
+audioLoader.load('../Objects/correct-6033.mp3', (buffer) => {
     successSound = new THREE.Audio(listener);
     successSound.setBuffer(buffer);
     successSound.setLoop(false);
     successSound.setVolume(0.5);
 });
 
-audioLoader.load('./Objects/wrong-47985.mp3', (buffer) => {
+audioLoader.load('../Objects/wrong-47985.mp3', (buffer) => {
     wrongSound = new THREE.Audio(listener);
     wrongSound.setBuffer(buffer);
     wrongSound.setLoop(false);
@@ -646,7 +646,7 @@ audioLoader.load('./Objects/wrong-47985.mp3', (buffer) => {
 
 
 const textureLoader = new THREE.TextureLoader();
-textureLoader.load('./Objects/360.jpg', (texture) => {
+textureLoader.load('../Objects/360.jpg', (texture) => {
     const sphereGeometry = new THREE.SphereGeometry(500, 60, 40);
     sphereGeometry.scale(-1, 1, 1);
 
@@ -669,13 +669,13 @@ loadingManager.onLoad = () => {
 };
 
 const mtlLoader = new MTLLoader(loadingManager);
-mtlLoader.load('./Objects/colored_map.mtl', (materials) => {
+mtlLoader.load('../Objects/colored_map.mtl', (materials) => {
     materials.preload();
 
     // Charger l'OBJ avec les matériaux
     const objLoader = new OBJLoader(loadingManager);
     objLoader.setMaterials(materials);
-    objLoader.load('./Objects/colored_map.obj', (object) => {
+    objLoader.load('../Objects/colored_map.obj', (object) => {
         object.scale.set(0.01, 0.01, 0.01);
         object.position.set(0, -0.01, 0);
         scene.add(object);
@@ -683,7 +683,7 @@ mtlLoader.load('./Objects/colored_map.mtl', (materials) => {
 });
 
 
-const OBJ_PATH = './Objects/DancingBro.fbx';
+const OBJ_PATH = '../Objects/DancingBro.fbx';
 // Charger le modèle avec animation
 const loader = new FBXLoader(loadingManager);
 loader.load(OBJ_PATH, (object) => {
