@@ -683,7 +683,7 @@ mtlLoader.load('./Augmented-Reality/Objects/colored_map.mtl', (materials) => {
 });
 
 
-const OBJ_PATH = './Augmented-Reality/Objects/Macarena_Dance.fbx';
+const OBJ_PATH = './Augmented-Reality/Objects/MacarenaDanceASCII.fbx';
 // Charger le modèle avec animation
 const loader = new FBXLoader(loadingManager);
 loader.load(OBJ_PATH, (object) => {
