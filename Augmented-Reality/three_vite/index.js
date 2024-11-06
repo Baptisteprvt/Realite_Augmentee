@@ -57,6 +57,7 @@ world.addBody(groundBody);
 */
 let bonesGroup = new THREE.Group();
 let selectedBoneIndex = 0;
+/** @type THREE.Mesh */
 let previousBone = null;
 let clock = new THREE.Clock();
 let oscillationSpeed = 5;
@@ -300,7 +301,7 @@ const nextBone = () => {
     }
 };
 
-const animateColor = (object) => {
+const animateColor = (/**@type THREE.Mesh*/object) => {
     const time = clock.getElapsedTime();
     const minRed = 0.5;
     const maxRed = 1.0;
@@ -309,6 +310,7 @@ const animateColor = (object) => {
     object.material.color.set(color);
     object.material.emissive.set(color);
     object.material.emissiveIntensity = redValue * 0.5;
+    object.material.depthTest = false;
 };
 
 const checkAnswer = (button) => {
